@@ -1,0 +1,99 @@
+
+https://github.com/SB44444/ArhDz5.git
+Архитектура ПО (семинары)
+Урок 5. Горизонтальные уровни и вертикальные срезы архитектуры
+
+Реализовать любой паттерн с лекции . Выпустить диаграмму компонент UML по нему.
+
+Паттерн Data Access Object (DAO)
+DAO реализует механизм доступа к данным, необходимый для работы с различными источниками, например базой данных, файлом или списком. Скрывает детали реализации получения данных от пользователей. Паттерн DAO принимает различные источники данных не влияя на компоненты или бизнес-логику. Выполняет функцию адаптера между компонентом приложения и источником данных.
+На UML схеме отображаются взаимосвязи классов. 
+Класс User и interface UserDAO имеют взаимозависимость. Класс UserDAOImpl зависит от класса User т.к. использует объекты этого класса и зависит от интерфейса UserDAO, т.к. реализует его методы
+Односторонняя зависимоть UserDAOImpl позволяет реализовать описанный выше механизм паттерна.
+
+package Component;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+
+/** Класс User представляет объект данных пользователя*/
+
+class User {
+    private int id;
+    private String name;
+
+    public User(int id, String name) {
+        this.id = id;
+        this.name = name;
+    }
+    public int getId() {
+        return id;
+    }
+    public String getName() {
+        return name;
+    }
+    public void setName(String name) {
+        this.name = name;
+    }
+}
+
+/** Интерфейс UserDAO определяет операции, которые должен поддерживать DAO*/
+
+public interface UserDAO {
+    List<User> getAllUsers();
+    User getUser(int id);
+    void updateUser(User user);
+    void deleteUser(User user);
+}
+
+/** Имплементация UserDAO для работы с базой данных SQL*/
+public class UserDAOImpl implements UserDAO {
+    private Connection dbConnection;
+
+    public UserDAOImpl(Connection dbConnection) {
+        this.dbConnection = dbConnection;
+    }
+
+    @Override  //SQL запрос на получение всех записей из таблицы
+    public List<User> getAllUsers() throws SQLException {
+        
+        String sql = "SELECT * FROM dbUsers";
+        Statement statement = dbConnection.createStatement();
+        return statement.executeQuery(sql);
+    }
+
+    @Override  //SQL запрос в таблицу на получение пользователя по id
+    public User getUser(int id)throws SQLException {        
+        String sql = String.format("SELECT * FROM dbUsers WHERE id = %d", id);
+        Statement statement = dbConnection.createStatement();
+        return statement.execute(sql);
+    } 
+
+    @Override  //SQL запрос на обновление записи в таблице.
+    public void updateUser(User user) throws SQLException {
+        // Здесь мы формируем SQL запрос на обновление записи в таблице студентов.
+        String sql = String.format("UPDATE dbUsers SET user = '%s' WHERE user = '%s'", user);
+        Statement statement = (Statement) dbConnection.createStatement();
+        statement.getArguments();
+    }
+
+    @Override // Здесь мы формируем SQL запрос на удаление записи из таблицы студентов.
+    public void deleteUser(User user) throws SQLException {
+        String sql = String.format("DELETE FROM dbUsers WHERE user = '%s'", user);
+        Statement statement = (Statement) dbConnection.createStatement();
+        statement.getArguments();
+    }
+
+}
+
+public class Main {
+    public static void main(String[] args) {
+        UserDao userDao = new UserDaoImpl();
+		
+		System.out.println(userDao.getAllUsers()); // Вывести список всех прользователй
+		System.out.println(userDao.getUser(1));  // Вывести пользователя с id == 1
+		System.out.println(userDao.updateUser(userDao.getUser(1))); // Обновить и вывести пользователя с id == 1
+		userDao.deleteUser(userDao.getUser(1)); // Удалить пользователя с id == 1
+    }
+}
